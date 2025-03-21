@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -9,6 +10,11 @@ import (
 
 	"github.com/joho/godotenv"
 )
+
+func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, "Hello, World!")
+}
 
 func main() {
 	err := godotenv.Load()
@@ -34,6 +40,9 @@ func main() {
 		r.Host = remote.Host
 		proxy.ServeHTTP(w, r)
 	})
+
+	// Add /hello endpoint
+	http.HandleFunc("/hc", helloWorldHandler)
 
 	log.Printf("Reverse proxy running on :%s, forwarding to %s", proxyPort, targetURL)
 	err = http.ListenAndServe(":"+proxyPort, nil)
