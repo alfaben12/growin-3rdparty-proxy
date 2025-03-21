@@ -41,7 +41,6 @@ func main() {
 		proxy.ServeHTTP(w, r)
 	})
 
-	// Add /hello endpoint
 	http.HandleFunc("/hc", helloWorldHandler)
 
 	log.Printf("Reverse proxy running on :%s, forwarding to %s", proxyPort, targetURL)
