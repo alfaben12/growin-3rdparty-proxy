@@ -44,7 +44,7 @@ func main() {
 		proxy.ServeHTTP(w, r)
 	})
 
-	http.HandleFunc("/hc", helloWorldHandler)
+	http.HandleFunc("/health", helloWorldHandler)
 
 	log.Printf("Reverse proxy running on :%s, forwarding to %s", proxyPort, targetURL)
 	err = http.ListenAndServe(":"+proxyPort, nil)
