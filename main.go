@@ -14,10 +14,7 @@ import (
 
 func helloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	response := map[string]string{"status": "ok"}
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 func main() {
@@ -38,17 +35,24 @@ func main() {
 		log.Fatal("Invalid TARGET_URL:", err)
 	}
 
+	// Set up the reverse proxy
 	proxy := httputil.NewSingleHostReverseProxy(remote)
+
+	// Override the transport to skip TLS verification
 	proxy.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Modify the request to match the expected host
+	director := proxy.Director
+	proxy.Director = func(r *http.Request) {
+		director(r)
 		r.Host = remote.Host
-		proxy.ServeHTTP(w, r)
-	})
+	}
 
+	// Routes
 	http.HandleFunc("/health", helloWorldHandler)
+	http.HandleFunc("/", proxy.ServeHTTP)
 
 	log.Printf("Reverse proxy running on :%s, forwarding to %s", proxyPort, targetURL)
 	err = http.ListenAndServe(":"+proxyPort, nil)
