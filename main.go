@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -38,6 +39,9 @@ func main() {
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
+	proxy.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		r.Host = remote.Host
